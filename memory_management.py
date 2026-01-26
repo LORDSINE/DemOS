@@ -28,7 +28,6 @@ class MemoryManagementModule:
         self.setup_ui()
     
     def setup_ui(self):
-        """Create the user interface for memory management."""
         # Header
         header_frame = tk.Frame(self.parent, bg="#34495e", height=60)
         header_frame.pack(fill=tk.X)
@@ -188,7 +187,6 @@ class MemoryManagementModule:
         self.results_text.pack(fill=tk.X, padx=5, pady=5)
     
     def add_memory_block(self):
-        """Add a memory block to the system."""
         try:
             size = int(self.block_size_var.get())
             
@@ -208,7 +206,6 @@ class MemoryManagementModule:
             messagebox.showerror("Error", "Please enter a valid numeric value")
     
     def quick_setup(self):
-        """Quickly set up 5 memory blocks with preset sizes."""
         self.clear_all()
         sizes = [100, 200, 300, 150, 250]
         for size in sizes:
@@ -221,7 +218,6 @@ class MemoryManagementModule:
         self.update_statistics()
     
     def update_blocks_display(self):
-        """Update the memory blocks treeview."""
         # Clear existing items
         for item in self.blocks_tree.get_children():
             self.blocks_tree.delete(item)
@@ -234,7 +230,6 @@ class MemoryManagementModule:
                                    values=(block.block_id, block.size, status, process))
     
     def allocate_memory(self):
-        """Allocate memory to a process using the selected algorithm."""
         if not self.memory_blocks:
             messagebox.showwarning("Warning", "Please add memory blocks first")
             return
@@ -305,38 +300,12 @@ class MemoryManagementModule:
             messagebox.showerror("Error", "Please enter valid numeric values")
     
     def first_fit(self, size):
-        """
-        First Fit Algorithm.
-        
-        Logic:
-        Scan memory blocks from beginning and allocate the first block
-        that is large enough to accommodate the request.
-        
-        Args:
-            size: Size of memory requested
-            
-        Returns:
-            MemoryBlock if allocation successful, None otherwise
-        """
         for block in self.memory_blocks:
             if not block.is_allocated and block.size >= size:
                 return block
         return None
     
     def best_fit(self, size):
-        """
-        Best Fit Algorithm.
-        
-        Logic:
-        Search all free blocks and allocate the smallest block
-        that is large enough. This minimizes wasted space.
-        
-        Args:
-            size: Size of memory requested
-            
-        Returns:
-            MemoryBlock if allocation successful, None otherwise
-        """
         suitable_blocks = [block for block in self.memory_blocks
                           if not block.is_allocated and block.size >= size]
         
@@ -347,19 +316,6 @@ class MemoryManagementModule:
         return min(suitable_blocks, key=lambda b: b.size)
     
     def worst_fit(self, size):
-        """
-        Worst Fit Algorithm.
-        
-        Logic:
-        Search all free blocks and allocate the largest block.
-        This leaves the largest remaining fragment.
-        
-        Args:
-            size: Size of memory requested
-            
-        Returns:
-            MemoryBlock if allocation successful, None otherwise
-        """
         suitable_blocks = [block for block in self.memory_blocks
                           if not block.is_allocated and block.size >= size]
         
@@ -370,7 +326,6 @@ class MemoryManagementModule:
         return max(suitable_blocks, key=lambda b: b.size)
     
     def deallocate_memory(self):
-        """Deallocate memory from a process."""
         try:
             process_id = self.process_id_var.get().strip()
             
