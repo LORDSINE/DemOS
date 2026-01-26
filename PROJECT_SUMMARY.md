@@ -76,9 +76,7 @@ An **Interactive Operating System Simulator** that goes beyond visualization - i
 ```
 OS_Sim/
 ├── main.py                 # Main application
-├── os_dashboard.py         # Dashboard module (NEW)
 ├── process_manager.py      # Process manager (NEW)
-├── file_system.py          # File system (NEW)
 ├── cpu_scheduling.py       # CPU scheduling
 ├── memory_management.py    # Memory management
 ├── disk_scheduling.py      # Disk scheduling
