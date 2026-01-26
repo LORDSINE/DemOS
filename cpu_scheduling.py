@@ -168,6 +168,8 @@ class CPUSchedulingModule:
         tk.Button(input_frame, text="Add Process", command=self.add_process,
                  bg="#27ae60", fg="white", font=("Arial", 10, "bold"),
                  cursor="hand2").pack(pady=(10, 0))
+        tk.Button(input_frame, text="Quick Setup (Example)", command=self.quick_setup,
+                 bg="#16a085", fg="white", font=("Arial", 9), cursor="hand2").pack(pady=(5, 0))
         
         # Process list
         list_frame = tk.LabelFrame(left_panel, text="Process List",
@@ -260,6 +262,27 @@ class CPUSchedulingModule:
             
         except ValueError:
             messagebox.showerror("Error", "Please enter valid numeric values")
+    
+    def quick_setup(self):
+        """Populate the process list with a classic example set."""
+        self.clear_processes()
+        sample_processes = [
+            ("P1", 0, 8, 2),
+            ("P2", 1, 4, 1),
+            ("P3", 2, 9, 3),
+            ("P4", 3, 5, 2)
+        ]
+        for pid, at, bt, pr in sample_processes:
+            proc = Process(pid, at, bt, pr)
+            self.processes.append(proc)
+            self.process_tree.insert("", tk.END, values=(pid, at, bt, pr))
+        # Set next PID suggestion
+        self.pid_var.set("P5")
+        self.arrival_var.set("0")
+        self.burst_var.set("5")
+        self.priority_var.set("1")
+        # Ensure simulation visuals are reset
+        self.reset_simulation()
     
     def clear_processes(self):
         """Clear all processes from the list."""
