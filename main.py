@@ -1,18 +1,3 @@
-"""
-Operating System Algorithm Simulator
-Main Application Entry Point
-
-This application demonstrates core OS concepts including:
-- CPU Scheduling
-- Memory Management
-- Disk Scheduling
-- File System
-- Process Management
-
-Author: OS Simulator Team
-Date: January 2026
-"""
-
 import tkinter as tk
 from tkinter import ttk
 import cpu_scheduling
@@ -22,13 +7,7 @@ import process_manager
 
 
 class OSSimulatorApp:
-    """
-    Main application class for the OS Simulator.
-    Provides navigation between different OS algorithm modules.
-    """
-    
     def __init__(self, root):
-        """Initialize the main application window."""
         self.root = root
         self.root.title("Operating System Algorithm Simulator")
         self.root.geometry("1200x800")
@@ -45,7 +24,6 @@ class OSSimulatorApp:
         self.show_home()
     
     def center_window(self):
-        """Center the application window on the screen."""
         self.root.update_idletasks()
         width = self.root.winfo_width()
         height = self.root.winfo_height()
@@ -54,12 +32,10 @@ class OSSimulatorApp:
         self.root.geometry(f'{width}x{height}+{x}+{y}')
     
     def clear_frame(self):
-        """Clear all widgets from the main frame."""
         for widget in self.main_frame.winfo_children():
             widget.destroy()
     
     def show_home(self):
-        """Display the home screen with module selection options."""
         self.clear_frame()
         
         # Title
@@ -175,28 +151,23 @@ class OSSimulatorApp:
         footer_label.pack(side=tk.BOTTOM, pady=10)
     
     def show_cpu_scheduling(self):
-        """Display the CPU Scheduling module."""
         self.clear_frame()
         cpu_scheduling.CPUSchedulingModule(self.main_frame, self.show_home)
     
     def show_memory_management(self):
-        """Display the Memory Management module."""
         self.clear_frame()
         memory_management.MemoryManagementModule(self.main_frame, self.show_home)
     
     def show_disk_scheduling(self):
-        """Display the Disk Scheduling module."""
         self.clear_frame()
         disk_scheduling.DiskSchedulingModule(self.main_frame, self.show_home)
     
     def show_process_manager(self):
-        """Display the Process Manager module."""
         self.clear_frame()
         process_manager.ProcessManagerModule(self.main_frame, self.show_home)
 
 
 def main():
-    """Main entry point for the application."""
     root = tk.Tk()
     app = OSSimulatorApp(root)
     root.mainloop()

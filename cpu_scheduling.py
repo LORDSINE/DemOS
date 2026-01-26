@@ -1,36 +1,10 @@
-"""
-CPU Scheduling Algorithm Simulator Module
-
-Implements and visualizes various CPU scheduling algorithms:
-- First Come First Serve (FCFS)
-- Shortest Job First (SJF) - Non-preemptive
-- Priority Scheduling - Non-preemptive
-- Round Robin (RR)
-
-Each algorithm includes:
-- Step-by-step execution
-- Gantt chart visualization
-- Calculation of waiting time and turnaround time
-"""
-
 import tkinter as tk
 from tkinter import ttk, messagebox
 import time
 
 
 class Process:
-    """Represents a single process in the system."""
-    
     def __init__(self, pid, arrival_time, burst_time, priority=0):
-        """
-        Initialize a process.
-        
-        Args:
-            pid: Process ID
-            arrival_time: Time at which process arrives
-            burst_time: CPU time required
-            priority: Priority value (lower value = higher priority)
-        """
         self.pid = pid
         self.arrival_time = arrival_time
         self.burst_time = burst_time
@@ -43,16 +17,7 @@ class Process:
 
 
 class CPUSchedulingModule:
-    """Main module for CPU Scheduling algorithms."""
-    
     def __init__(self, parent, back_callback):
-        """
-        Initialize the CPU Scheduling module.
-        
-        Args:
-            parent: Parent Tkinter widget
-            back_callback: Function to call when returning to home
-        """
         self.parent = parent
         self.back_callback = back_callback
         self.processes = []
@@ -63,7 +28,6 @@ class CPUSchedulingModule:
         self.setup_ui()
     
     def setup_ui(self):
-        """Create the user interface for CPU scheduling."""
         # Header
         header_frame = tk.Frame(self.parent, bg="#34495e", height=60)
         header_frame.pack(fill=tk.X)
@@ -225,7 +189,6 @@ class CPUSchedulingModule:
         self.results_text.pack(fill=tk.X, padx=5, pady=5)
     
     def add_process(self):
-        """Add a process to the process list."""
         try:
             pid = self.pid_var.get().strip()
             arrival = int(self.arrival_var.get())
@@ -264,7 +227,6 @@ class CPUSchedulingModule:
             messagebox.showerror("Error", "Please enter valid numeric values")
     
     def quick_setup(self):
-        """Populate the process list with a classic example set."""
         self.clear_processes()
         sample_processes = [
             ("P1", 0, 8, 2),
@@ -285,14 +247,12 @@ class CPUSchedulingModule:
         self.reset_simulation()
     
     def clear_processes(self):
-        """Clear all processes from the list."""
         self.processes.clear()
         for item in self.process_tree.get_children():
             self.process_tree.delete(item)
         self.reset_simulation()
     
     def reset_simulation(self):
-        """Reset the simulation state."""
         self.gantt_data.clear()
         self.current_step = 0
         self.canvas.delete("all")
@@ -307,7 +267,6 @@ class CPUSchedulingModule:
             process.start_time = -1
     
     def simulate(self):
-        """Run the selected scheduling algorithm."""
         if not self.processes:
             messagebox.showwarning("Warning", "Please add at least one process")
             return
@@ -336,14 +295,6 @@ class CPUSchedulingModule:
         self.display_results()
     
     def simulate_fcfs(self):
-        """
-        First Come First Serve (FCFS) Scheduling Algorithm.
-        
-        Logic:
-        1. Sort processes by arrival time
-        2. Execute processes in order of arrival
-        3. If CPU is idle, wait for next process
-        """
         # Sort by arrival time
         sorted_processes = sorted(self.processes, key=lambda p: p.arrival_time)
         
@@ -371,14 +322,6 @@ class CPUSchedulingModule:
             process.waiting_time = process.turnaround_time - process.burst_time
     
     def simulate_sjf(self):
-        """
-        Shortest Job First (SJF) - Non-preemptive Scheduling Algorithm.
-        
-        Logic:
-        1. At each decision point, select process with shortest burst time
-        2. Among arrived processes, pick the one with minimum burst time
-        3. Execute it to completion
-        """
         completed = []
         current_time = 0
         
@@ -412,14 +355,6 @@ class CPUSchedulingModule:
             completed.append(selected)
     
     def simulate_priority(self):
-        """
-        Priority Scheduling - Non-preemptive Algorithm.
-        
-        Logic:
-        1. At each decision point, select process with highest priority (lowest value)
-        2. Among arrived processes, pick the one with minimum priority value
-        3. Execute it to completion
-        """
         completed = []
         current_time = 0
         
@@ -453,18 +388,6 @@ class CPUSchedulingModule:
             completed.append(selected)
     
     def simulate_round_robin(self, time_quantum):
-        """
-        Round Robin (RR) Scheduling Algorithm.
-        
-        Logic:
-        1. Maintain a ready queue
-        2. Execute each process for time quantum or remaining time (whichever is smaller)
-        3. If process not complete, move to end of queue
-        4. Continue until all processes complete
-        
-        Args:
-            time_quantum: Maximum time slice for each process
-        """
         from collections import deque
         
         # Create a copy of processes to track remaining time
@@ -527,7 +450,6 @@ class CPUSchedulingModule:
                 process_queue.append(process)
     
     def draw_gantt_chart(self):
-        """Draw the Gantt chart visualization on the canvas."""
         self.canvas.delete("all")
         
         if not self.gantt_data:
@@ -612,7 +534,6 @@ class CPUSchedulingModule:
                                font=("Arial", 11, "bold"))
     
     def display_results(self):
-        """Display calculated metrics in the results area."""
         self.results_text.delete(1.0, tk.END)
         
         # Header

@@ -1,35 +1,9 @@
-"""
-Memory Management Algorithm Simulator Module
-
-Implements and visualizes various memory allocation algorithms:
-- First Fit
-- Best Fit
-- Worst Fit
-
-Each algorithm includes:
-- Visual memory block diagram
-- Allocation/deallocation operations
-- Fragmentation analysis
-- Step-by-step allocation process
-"""
-
 import tkinter as tk
 from tkinter import ttk, messagebox
 
 
 class MemoryBlock:
-    """Represents a memory block in the system."""
-    
     def __init__(self, block_id, size, is_allocated=False, process_id=None):
-        """
-        Initialize a memory block.
-        
-        Args:
-            block_id: Unique identifier for the block
-            size: Size of the memory block
-            is_allocated: Whether the block is currently allocated
-            process_id: ID of process using this block (if allocated)
-        """
         self.block_id = block_id
         self.size = size
         self.is_allocated = is_allocated
@@ -37,32 +11,14 @@ class MemoryBlock:
 
 
 class ProcessRequest:
-    """Represents a memory allocation request from a process."""
-    
     def __init__(self, process_id, size):
-        """
-        Initialize a process memory request.
-        
-        Args:
-            process_id: Process identifier
-            size: Amount of memory requested
-        """
         self.process_id = process_id
         self.size = size
         self.allocated_block = None
 
 
 class MemoryManagementModule:
-    """Main module for Memory Management algorithms."""
-    
     def __init__(self, parent, back_callback):
-        """
-        Initialize the Memory Management module.
-        
-        Args:
-            parent: Parent Tkinter widget
-            back_callback: Function to call when returning to home
-        """
         self.parent = parent
         self.back_callback = back_callback
         self.memory_blocks = []

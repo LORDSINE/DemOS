@@ -1,36 +1,9 @@
-"""
-Disk Scheduling Algorithm Simulator Module
-
-Implements and visualizes various disk scheduling algorithms:
-- FCFS (First Come First Serve)
-- SSTF (Shortest Seek Time First)
-- SCAN (Elevator Algorithm)
-- C-SCAN (Circular SCAN)
-- LOOK
-- C-LOOK (Circular LOOK)
-
-Each algorithm includes:
-- Disk head movement visualization
-- Seek sequence display
-- Total seek time calculation
-- Step-by-step execution
-"""
-
 import tkinter as tk
 from tkinter import ttk, messagebox
 
 
 class DiskSchedulingModule:
-    """Main module for Disk Scheduling algorithms."""
-    
     def __init__(self, parent, back_callback):
-        """
-        Initialize the Disk Scheduling module.
-        
-        Args:
-            parent: Parent Tkinter widget
-            back_callback: Function to call when returning to home
-        """
         self.parent = parent
         self.back_callback = back_callback
         self.requests = []
@@ -47,7 +20,6 @@ class DiskSchedulingModule:
         self.setup_ui()
     
     def setup_ui(self):
-        """Create the user interface for disk scheduling."""
         # Header
         header_frame = tk.Frame(self.parent, bg="#34495e", height=60)
         header_frame.pack(fill=tk.X)
@@ -236,7 +208,6 @@ class DiskSchedulingModule:
         self.results_text.pack(fill=tk.X, padx=5, pady=5)
     
     def setup_canvas_controls(self):
-        """Setup pan and zoom controls for the canvas."""
         # Mouse wheel zoom
         self.canvas.bind("<MouseWheel>", self.on_canvas_zoom)
         
@@ -248,7 +219,6 @@ class DiskSchedulingModule:
         self.canvas.bind("<Double-Button-1>", self.reset_canvas_view)
     
     def on_canvas_zoom(self, event):
-        """Handle mouse wheel zoom."""
         if not self.seek_sequence:
             return
         
@@ -270,13 +240,11 @@ class DiskSchedulingModule:
         self.draw_visualization()
     
     def on_pan_start(self, event):
-        """Start panning."""
         self.pan_start_x = event.x
         self.pan_start_y = event.y
         self.canvas.config(cursor="fleur")
     
     def on_pan_move(self, event):
-        """Handle pan movement."""
         if not self.seek_sequence:
             return
         
@@ -294,7 +262,6 @@ class DiskSchedulingModule:
         self.draw_visualization()
     
     def reset_canvas_view(self, event=None):
-        """Reset canvas zoom and pan to default."""
         self.canvas_zoom = 1.0
         self.canvas_offset_x = 0
         self.canvas_offset_y = 0
@@ -303,7 +270,6 @@ class DiskSchedulingModule:
             self.draw_visualization()
     
     def add_request(self):
-        """Add a disk request to the queue."""
         try:
             track = int(self.request_var.get())
             disk_size = int(self.disk_size_var.get())
@@ -320,7 +286,6 @@ class DiskSchedulingModule:
             messagebox.showerror("Error", "Please enter valid numeric values")
     
     def quick_setup(self):
-        """Quickly set up example disk requests."""
         self.clear_requests()
         # Classic example: requests at tracks 98, 183, 37, 122, 14, 124, 65, 67
         example_requests = [98, 183, 37, 122, 14, 124, 65, 67]
@@ -330,20 +295,17 @@ class DiskSchedulingModule:
             self.request_listbox.insert(tk.END, f"Track {track}")
     
     def clear_requests(self):
-        """Clear all disk requests."""
         self.requests.clear()
         self.request_listbox.delete(0, tk.END)
         self.reset_simulation()
     
     def reset_simulation(self):
-        """Reset the simulation state."""
         self.seek_sequence.clear()
         self.total_seek_time = 0
         self.canvas.delete("all")
         self.results_text.delete(1.0, tk.END)
     
     def simulate(self):
-        """Run the selected disk scheduling algorithm."""
         if not self.requests:
             messagebox.showwarning("Warning", "Please add at least one disk request")
             return
@@ -380,16 +342,6 @@ class DiskSchedulingModule:
             messagebox.showerror("Error", "Please enter valid numeric values")
     
     def simulate_fcfs(self, initial_head):
-        """
-        First Come First Serve (FCFS) Disk Scheduling.
-        
-        Logic:
-        Process disk requests in the order they arrive.
-        Simple but may result in high seek time.
-        
-        Args:
-            initial_head: Starting position of disk head
-        """
         self.seek_sequence = [initial_head]
         current_position = initial_head
         
@@ -401,16 +353,6 @@ class DiskSchedulingModule:
             self.seek_sequence.append(current_position)
     
     def simulate_sstf(self, initial_head):
-        """
-        Shortest Seek Time First (SSTF) Disk Scheduling.
-        
-        Logic:
-        Always service the request that is closest to the current head position.
-        Greedy approach that minimizes seek time locally.
-        
-        Args:
-            initial_head: Starting position of disk head
-        """
         self.seek_sequence = [initial_head]
         current_position = initial_head
         remaining_requests = self.requests.copy()
@@ -428,17 +370,6 @@ class DiskSchedulingModule:
             remaining_requests.remove(closest)
     
     def simulate_scan(self, initial_head, disk_size):
-        """
-        SCAN (Elevator) Disk Scheduling Algorithm.
-        
-        Logic:
-        Move in one direction servicing all requests until reaching the end,
-        then reverse direction and service requests in the other direction.
-        
-        Args:
-            initial_head: Starting position of disk head
-            disk_size: Total number of tracks on disk
-        """
         self.seek_sequence = [initial_head]
         current_position = initial_head
         direction = self.direction_var.get()
@@ -491,18 +422,6 @@ class DiskSchedulingModule:
                 self.seek_sequence.append(current_position)
     
     def simulate_cscan(self, initial_head, disk_size):
-        """
-        C-SCAN (Circular SCAN) Disk Scheduling Algorithm.
-        
-        Logic:
-        Move in one direction servicing all requests until reaching the end,
-        then jump back to the beginning and continue in the same direction.
-        Provides more uniform wait time than SCAN.
-        
-        Args:
-            initial_head: Starting position of disk head
-            disk_size: Total number of tracks on disk
-        """
         self.seek_sequence = [initial_head]
         current_position = initial_head
         
@@ -539,16 +458,6 @@ class DiskSchedulingModule:
             self.seek_sequence.append(current_position)
     
     def simulate_look(self, initial_head):
-        """
-        LOOK Disk Scheduling Algorithm.
-        
-        Logic:
-        Similar to SCAN but only goes as far as the last request in each direction,
-        not all the way to the end of the disk.
-        
-        Args:
-            initial_head: Starting position of disk head
-        """
         self.seek_sequence = [initial_head]
         current_position = initial_head
         direction = self.direction_var.get()
@@ -587,16 +496,6 @@ class DiskSchedulingModule:
                 self.seek_sequence.append(current_position)
     
     def simulate_clook(self, initial_head):
-        """
-        C-LOOK (Circular LOOK) Disk Scheduling Algorithm.
-        
-        Logic:
-        Similar to C-SCAN but only goes as far as the last request,
-        then jumps back to the first request in the direction of movement.
-        
-        Args:
-            initial_head: Starting position of disk head
-        """
         self.seek_sequence = [initial_head]
         current_position = initial_head
         
@@ -629,7 +528,6 @@ class DiskSchedulingModule:
             self.seek_sequence.append(current_position)
     
     def draw_visualization(self):
-        """Draw the disk head movement visualization - Timeline style with zoom and pan."""
         self.canvas.delete("all")
         
         if not self.seek_sequence:
@@ -721,7 +619,6 @@ class DiskSchedulingModule:
                                font=("Arial", 9), fill="#95a5a6")
     
     def display_results(self):
-        """Display the results and statistics."""
         self.results_text.delete(1.0, tk.END)
         
         # Header
