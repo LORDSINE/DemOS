@@ -6,9 +6,9 @@ A desktop app to visualize core OS concepts: CPU scheduling, memory management, 
 - Python 3.8+
 - Tkinter (bundled with most Python installers)
 
-Install optional dependencies:
+If Tkinter is not available in your Python installation:
 ```bash
-pip install -r requirements.txt
+pip install tkinter
 ```
 
 ## Quick Start
