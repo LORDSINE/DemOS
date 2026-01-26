@@ -172,6 +172,3 @@ OS_Sim/
 ## Limitations
 - Simulations are pedagogical, not optimized for performance at large scales
 - The file system and dashboard features are basic demonstrations
-
-## License
-If you plan to publish this, add a LICENSE file appropriate for your use.
