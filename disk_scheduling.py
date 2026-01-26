@@ -37,6 +37,13 @@ class DiskSchedulingModule:
         self.seek_sequence = []
         self.total_seek_time = 0
         
+        # Pan and Zoom variables
+        self.canvas_zoom = 1.0
+        self.canvas_offset_x = 0
+        self.canvas_offset_y = 0
+        self.pan_start_x = 0
+        self.pan_start_y = 0
+        
         self.setup_ui()
     
     def setup_ui(self):
@@ -71,16 +78,37 @@ class DiskSchedulingModule:
         content_frame = tk.Frame(self.parent, bg="#ecf0f1")
         content_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
-        # Left panel - Input and Controls
-        left_panel = tk.Frame(content_frame, bg="white", relief=tk.RIDGE, borderwidth=2)
-        left_panel.pack(side=tk.LEFT, fill=tk.BOTH, padx=(0, 5), pady=0)
-        left_panel.config(width=350)
-        left_panel.pack_propagate(False)
+        # Left panel with scrollbar - Input and Controls
+        left_container = tk.Frame(content_frame, bg="white", relief=tk.RIDGE, borderwidth=2)
+        left_container.pack(side=tk.LEFT, fill=tk.BOTH, padx=(0, 5), pady=0)
+        left_container.config(width=350)
+        left_container.pack_propagate(False)
+        
+        # Canvas for scrolling
+        left_canvas = tk.Canvas(left_container, bg="white", highlightthickness=0)
+        scrollbar = tk.Scrollbar(left_container, orient=tk.VERTICAL, command=left_canvas.yview)
+        left_panel = tk.Frame(left_canvas, bg="white")
+        
+        left_panel.bind(
+            "<Configure>",
+            lambda e: left_canvas.configure(scrollregion=left_canvas.bbox("all"))
+        )
+        
+        left_canvas.create_window((0, 0), window=left_panel, anchor="nw")
+        left_canvas.configure(yscrollcommand=scrollbar.set)
+        
+        left_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        # Enable mousewheel scrolling
+        def _on_mousewheel(event):
+            left_canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        left_canvas.bind_all("<MouseWheel>", _on_mousewheel)
         
         # Algorithm selection
         algo_frame = tk.LabelFrame(left_panel, text="Select Algorithm",
-                                   font=("Arial", 11, "bold"), bg="white", padx=10, pady=10)
-        algo_frame.pack(fill=tk.X, padx=10, pady=10)
+                                   font=("Arial", 10, "bold"), bg="white", padx=8, pady=5)
+        algo_frame.pack(fill=tk.X, padx=10, pady=(10, 5))
         
         self.algorithm_var = tk.StringVar(value="FCFS")
         algorithms = [("FCFS", "FCFS"), ("SSTF", "SSTF"),
@@ -94,8 +122,8 @@ class DiskSchedulingModule:
         
         # Disk parameters
         params_frame = tk.LabelFrame(left_panel, text="Disk Parameters",
-                                     font=("Arial", 11, "bold"), bg="white", padx=10, pady=10)
-        params_frame.pack(fill=tk.X, padx=10, pady=10)
+                                     font=("Arial", 10, "bold"), bg="white", padx=8, pady=5)
+        params_frame.pack(fill=tk.X, padx=10, pady=5)
         
         # Initial head position
         head_frame = tk.Frame(params_frame, bg="white")
@@ -131,8 +159,8 @@ class DiskSchedulingModule:
         
         # Request input
         request_frame = tk.LabelFrame(left_panel, text="Add Disk Request",
-                                      font=("Arial", 11, "bold"), bg="white", padx=10, pady=10)
-        request_frame.pack(fill=tk.X, padx=10, pady=10)
+                                      font=("Arial", 10, "bold"), bg="white", padx=8, pady=5)
+        request_frame.pack(fill=tk.X, padx=10, pady=5)
         
         # Request position
         req_frame = tk.Frame(request_frame, bg="white")
@@ -155,23 +183,28 @@ class DiskSchedulingModule:
         
         # Requests list
         list_frame = tk.LabelFrame(left_panel, text="Request Queue",
-                                   font=("Arial", 11, "bold"), bg="white", padx=5, pady=5)
-        list_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+                                   font=("Arial", 10, "bold"), bg="white", padx=5, pady=3)
+        list_frame.pack(fill=tk.X, padx=10, pady=5)
         
         # Listbox for requests
-        self.request_listbox = tk.Listbox(list_frame, font=("Arial", 10), height=10)
-        self.request_listbox.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        self.request_listbox = tk.Listbox(list_frame, font=("Arial", 9), height=5)
+        self.request_listbox.pack(fill=tk.X, padx=3, pady=3)
         
         # Control buttons
         btn_frame = tk.Frame(left_panel, bg="white")
-        btn_frame.pack(fill=tk.X, padx=10, pady=10)
+        btn_frame.pack(fill=tk.X, padx=10, pady=5)
+        
+        # Prominent Simulate button
+        tk.Button(btn_frame, text="▶ RUN SIMULATION", command=self.simulate,
+                 bg="#27ae60", fg="white", font=("Arial", 11, "bold"),
+                 cursor="hand2", relief=tk.FLAT, pady=6).pack(fill=tk.X, pady=(2, 5))
         
         tk.Button(btn_frame, text="Clear All", command=self.clear_requests,
-                 bg="#e74c3c", fg="white", font=("Arial", 9, "bold")).pack(fill=tk.X, pady=2)
-        tk.Button(btn_frame, text="Simulate", command=self.simulate,
-                 bg="#3498db", fg="white", font=("Arial", 10, "bold")).pack(fill=tk.X, pady=2)
+                 bg="#e74c3c", fg="white", font=("Arial", 9, "bold"),
+                 cursor="hand2").pack(fill=tk.X, pady=1)
         tk.Button(btn_frame, text="Reset", command=self.reset_simulation,
-                 bg="#95a5a6", fg="white", font=("Arial", 9, "bold")).pack(fill=tk.X, pady=2)
+                 bg="#95a5a6", fg="white", font=("Arial", 9, "bold"),
+                 cursor="hand2").pack(fill=tk.X, pady=1)
         
         # Right panel - Visualization
         right_panel = tk.Frame(content_frame, bg="white", relief=tk.RIDGE, borderwidth=2)
@@ -180,19 +213,94 @@ class DiskSchedulingModule:
         # Canvas for disk head movement
         canvas_frame = tk.LabelFrame(right_panel, text="Disk Head Movement",
                                      font=("Arial", 12, "bold"), bg="white", padx=5, pady=5)
-        canvas_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        canvas_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=(10, 5))
         
-        self.canvas = tk.Canvas(canvas_frame, bg="white", highlightthickness=0)
+        self.canvas = tk.Canvas(canvas_frame, bg="white", highlightthickness=0, height=400, width=700)
         self.canvas.pack(fill=tk.BOTH, expand=True)
+        
+        # Add pan and zoom controls
+        self.setup_canvas_controls()
+        
+        # Control hints
+        hint_label = tk.Label(canvas_frame, text="💡 Drag to pan • Scroll to zoom • Double-click to reset",
+                             font=("Arial", 8, "italic"), bg="white", fg="#7f8c8d")
+        hint_label.pack(pady=2)
         
         # Results frame
         results_frame = tk.LabelFrame(right_panel, text="Results & Statistics",
                                       font=("Arial", 12, "bold"), bg="white", padx=5, pady=5)
-        results_frame.pack(fill=tk.X, padx=10, pady=10)
+        results_frame.pack(fill=tk.X, padx=10, pady=(0, 10), side=tk.BOTTOM)
         
-        self.results_text = tk.Text(results_frame, height=10, font=("Courier", 9),
+        self.results_text = tk.Text(results_frame, height=8, font=("Courier", 9),
                                    bg="#f8f9fa", relief=tk.FLAT)
         self.results_text.pack(fill=tk.X, padx=5, pady=5)
+    
+    def setup_canvas_controls(self):
+        """Setup pan and zoom controls for the canvas."""
+        # Mouse wheel zoom
+        self.canvas.bind("<MouseWheel>", self.on_canvas_zoom)
+        
+        # Pan with mouse drag
+        self.canvas.bind("<ButtonPress-1>", self.on_pan_start)
+        self.canvas.bind("<B1-Motion>", self.on_pan_move)
+        
+        # Double-click to reset view
+        self.canvas.bind("<Double-Button-1>", self.reset_canvas_view)
+    
+    def on_canvas_zoom(self, event):
+        """Handle mouse wheel zoom."""
+        if not self.seek_sequence:
+            return
+        
+        # Get mouse position
+        x = self.canvas.canvasx(event.x)
+        y = self.canvas.canvasy(event.y)
+        
+        # Zoom factor
+        factor = 1.1 if event.delta > 0 else 0.9
+        
+        # Limit zoom range
+        new_zoom = self.canvas_zoom * factor
+        if new_zoom < 0.5 or new_zoom > 3.0:
+            return
+        
+        self.canvas_zoom = new_zoom
+        
+        # Redraw with new zoom
+        self.draw_visualization()
+    
+    def on_pan_start(self, event):
+        """Start panning."""
+        self.pan_start_x = event.x
+        self.pan_start_y = event.y
+        self.canvas.config(cursor="fleur")
+    
+    def on_pan_move(self, event):
+        """Handle pan movement."""
+        if not self.seek_sequence:
+            return
+        
+        # Calculate offset
+        dx = event.x - self.pan_start_x
+        dy = event.y - self.pan_start_y
+        
+        self.canvas_offset_x += dx
+        self.canvas_offset_y += dy
+        
+        self.pan_start_x = event.x
+        self.pan_start_y = event.y
+        
+        # Redraw with new offset
+        self.draw_visualization()
+    
+    def reset_canvas_view(self, event=None):
+        """Reset canvas zoom and pan to default."""
+        self.canvas_zoom = 1.0
+        self.canvas_offset_x = 0
+        self.canvas_offset_y = 0
+        self.canvas.config(cursor="")
+        if self.seek_sequence:
+            self.draw_visualization()
     
     def add_request(self):
         """Add a disk request to the queue."""
@@ -521,114 +629,96 @@ class DiskSchedulingModule:
             self.seek_sequence.append(current_position)
     
     def draw_visualization(self):
-        """Draw the disk head movement visualization."""
+        """Draw the disk head movement visualization - Timeline style with zoom and pan."""
         self.canvas.delete("all")
         
         if not self.seek_sequence:
             return
         
         # Get canvas dimensions
+        self.canvas.update_idletasks()
         canvas_width = self.canvas.winfo_width()
         canvas_height = self.canvas.winfo_height()
         
-        if canvas_width <= 1:
-            canvas_width = 800
-        if canvas_height <= 1:
+        # If canvas has no size, use defaults
+        if canvas_width < 100:
+            canvas_width = 700
+        if canvas_height < 100:
             canvas_height = 400
         
-        # Drawing parameters
-        margin_left = 60
-        margin_right = 40
-        margin_top = 60
-        margin_bottom = 60
-        
-        graph_width = canvas_width - margin_left - margin_right
-        graph_height = canvas_height - margin_top - margin_bottom
-        
-        # Title
-        self.canvas.create_text(canvas_width // 2, 25,
-                               text=f"Disk Head Movement - {self.algorithm_var.get()} Algorithm",
-                               font=("Arial", 14, "bold"))
-        
-        # Calculate scales
+        # Calculate dimensions with zoom
         disk_size = int(self.disk_size_var.get())
-        max_sequence = len(self.seek_sequence) - 1
+        scale = ((canvas_width - 60) / disk_size) * self.canvas_zoom
+        y_spacing = ((canvas_height - 50) / len(self.seek_sequence) if len(self.seek_sequence) > 1 else 30) * self.canvas_zoom
+        x_start = 40 + self.canvas_offset_x
+        y_top = 30 + self.canvas_offset_y
         
-        if max_sequence == 0:
-            return
+        # Draw horizontal axis (track numbers)
+        self.canvas.create_line(x_start, y_top, x_start + ((canvas_width - 60) * self.canvas_zoom), y_top,
+                               fill="#7f8c8d", width=int(2 * self.canvas_zoom))
         
-        x_scale = graph_width / max_sequence
-        y_scale = graph_height / disk_size
+        # Draw tick marks and labels on axis
+        tick_interval = disk_size // 10 if disk_size > 0 else 20
+        for i in range(0, disk_size + 1, tick_interval):
+            x = x_start + i * scale
+            self.canvas.create_line(x, y_top - (5 * self.canvas_zoom), x, y_top + (5 * self.canvas_zoom), 
+                                   fill="#95a5a6", width=int(1 * self.canvas_zoom))
+            self.canvas.create_text(x, y_top - (12 * self.canvas_zoom), text=str(i),
+                                   font=("Arial", max(6, int(8 * self.canvas_zoom))), fill="#7f8c8d")
         
-        # Draw axes
-        # Y-axis (track numbers)
-        self.canvas.create_line(margin_left, margin_top,
-                               margin_left, margin_top + graph_height,
-                               width=2, arrow=tk.LAST)
+        # Color palette for lines
+        colors = ['#00d4aa', '#3fb950', '#d29922', '#f85149', '#a371f7',
+                  '#79c0ff', '#ff7b72', '#7ee787', '#ffa657', '#d2a8ff']
         
-        # X-axis (sequence)
-        self.canvas.create_line(margin_left, margin_top + graph_height,
-                               margin_left + graph_width, margin_top + graph_height,
-                               width=2, arrow=tk.LAST)
+        # Start position
+        prev_x = x_start + self.seek_sequence[0] * scale
+        prev_y = y_top + (15 * self.canvas_zoom)
         
-        # Y-axis label
-        self.canvas.create_text(margin_left - 30, margin_top - 20,
-                               text="Track", font=("Arial", 10, "bold"))
+        # Draw start marker
+        marker_size = 6 * self.canvas_zoom
+        self.canvas.create_oval(prev_x - marker_size, prev_y - marker_size, 
+                               prev_x + marker_size, prev_y + marker_size,
+                               fill="#2ecc71", outline="")
+        self.canvas.create_text(prev_x, prev_y + (15 * self.canvas_zoom), 
+                               text=f"Start: {self.seek_sequence[0]}",
+                               font=("Arial", max(6, int(8 * self.canvas_zoom))), fill="#2c3e50")
         
-        # X-axis label
-        self.canvas.create_text(canvas_width // 2, canvas_height - 20,
-                               text="Request Sequence", font=("Arial", 10, "bold"))
-        
-        # Draw grid lines and Y-axis labels
-        num_grid_lines = 10
-        grid_interval = disk_size / num_grid_lines
-        
-        for i in range(num_grid_lines + 1):
-            track_num = int(i * grid_interval)
-            y = margin_top + graph_height - (track_num * y_scale)
+        # Draw movement path
+        for i in range(1, len(self.seek_sequence)):
+            curr_x = x_start + self.seek_sequence[i] * scale
+            curr_y = prev_y + y_spacing
+            color = colors[(i - 1) % len(colors)]
             
-            # Grid line
-            self.canvas.create_line(margin_left, y,
-                                   margin_left + graph_width, y,
-                                   fill="#e0e0e0", dash=(2, 2))
+            # Draw line with arrow
+            line_width = max(1, int(2 * self.canvas_zoom))
+            arrow_size = int(10 * self.canvas_zoom)
+            self.canvas.create_line(prev_x, prev_y, curr_x, curr_y,
+                                   fill=color, width=line_width, arrow=tk.LAST, 
+                                   arrowshape=(arrow_size, arrow_size + 2, arrow_size // 2))
             
-            # Label
-            self.canvas.create_text(margin_left - 15, y,
-                                   text=str(track_num),
-                                   font=("Arial", 8))
-        
-        # Draw the seek sequence path
-        points = []
-        for i, track in enumerate(self.seek_sequence):
-            x = margin_left + (i * x_scale)
-            y = margin_top + graph_height - (track * y_scale)
-            points.append((x, y))
-        
-        # Draw lines connecting points
-        for i in range(len(points) - 1):
-            x1, y1 = points[i]
-            x2, y2 = points[i + 1]
+            # Check if this is a requested track or intermediate
+            is_request = self.seek_sequence[i] in self.requests
+            point_color = "#e74c3c" if is_request else "#95a5a6"
+            point_size = (4 if is_request else 3) * self.canvas_zoom
             
-            # Draw line
-            self.canvas.create_line(x1, y1, x2, y2,
-                                   fill="#3498db", width=2, arrow=tk.LAST)
-        
-        # Draw points and labels
-        for i, (x, y) in enumerate(points):
             # Draw point
-            self.canvas.create_oval(x - 5, y - 5, x + 5, y + 5,
-                                   fill="#e74c3c" if i == 0 else "#2ecc71",
-                                   outline="black", width=2)
+            self.canvas.create_oval(curr_x - point_size, curr_y - point_size,
+                                   curr_x + point_size, curr_y + point_size,
+                                   fill=point_color, outline="")
             
-            # Label with track number
-            label = f"{self.seek_sequence[i]}"
-            if i == 0:
-                label = f"Start\n{self.seek_sequence[i]}"
+            # Draw label
+            self.canvas.create_text(curr_x + (20 * self.canvas_zoom), curr_y, 
+                                   text=str(self.seek_sequence[i]),
+                                   font=("Arial", max(6, int(8 * self.canvas_zoom))), fill="#2c3e50")
             
-            # Position label above or below point to avoid overlap
-            label_y = y - 20 if i % 2 == 0 else y + 20
-            self.canvas.create_text(x, label_y, text=label,
-                                   font=("Arial", 8, "bold"))
+            prev_x = curr_x
+            prev_y = curr_y
+        
+        # Draw zoom indicator
+        zoom_text = f"Zoom: {self.canvas_zoom:.1f}x"
+        self.canvas.create_text(canvas_width - 50, 20,
+                               text=zoom_text,
+                               font=("Arial", 9), fill="#95a5a6")
     
     def display_results(self):
         """Display the results and statistics."""
