@@ -126,7 +126,7 @@ def validate_numeric_input(text: str, allow_negative: bool = False,
         return False
 
 
-def center_window(window: tk.Tk or tk.Toplevel, width: int = None,
+def center_window(window: tk.Tk | tk.Toplevel, width: int = None,
                   height: int = None) -> None:
     window.update_idletasks()
     
