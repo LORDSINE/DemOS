@@ -18,9 +18,7 @@ from tkinter import ttk
 import cpu_scheduling
 import memory_management
 import disk_scheduling
-import file_system
 import process_manager
-import os_dashboard
 
 
 class OSSimulatorApp:
@@ -104,9 +102,7 @@ class OSSimulatorApp:
         
         # Module buttons
         modules = [
-            ("OS Dashboard", "Real-time system monitor and overview", self.show_dashboard),
             ("Process Manager", "Create processes with live memory allocation", self.show_process_manager),
-            ("File System", "Create files and see disk block allocation", self.show_file_system),
             ("CPU Scheduling", "Visualize process scheduling algorithms", self.show_cpu_scheduling),
             ("Memory Management", "Demonstrate memory allocation strategies", self.show_memory_management),
             ("Disk Scheduling", "Simulate disk head movement algorithms", self.show_disk_scheduling)
@@ -193,20 +189,10 @@ class OSSimulatorApp:
         self.clear_frame()
         disk_scheduling.DiskSchedulingModule(self.main_frame, self.show_home)
     
-    def show_file_system(self):
-        """Display the File System module."""
-        self.clear_frame()
-        file_system.FileSystemModule(self.main_frame, self.show_home)
-    
     def show_process_manager(self):
         """Display the Process Manager module."""
         self.clear_frame()
         process_manager.ProcessManagerModule(self.main_frame, self.show_home)
-    
-    def show_dashboard(self):
-        """Display the OS Dashboard module."""
-        self.clear_frame()
-        os_dashboard.OSDashboardModule(self.main_frame, self.show_home)
 
 
 def main():
