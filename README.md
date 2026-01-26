@@ -266,9 +266,7 @@ Process P3: Arrival=2, Burst=8, Priority=3
 OS_Sim/
 │
 ├── main.py                    # Main application entry point
-├── os_dashboard.py            # NEW: Real-time system dashboard
 ├── process_manager.py         # NEW: Process & memory management
-├── file_system.py             # NEW: File creation & disk allocation
 ├── cpu_scheduling.py          # CPU scheduling algorithms & GUI
 ├── memory_management.py       # Memory allocation algorithms & GUI
 ├── disk_scheduling.py         # Disk scheduling algorithms & GUI
