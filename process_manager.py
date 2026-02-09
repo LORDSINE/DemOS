@@ -213,10 +213,10 @@ class ProcessManagerModule:
         self.process_tree.heading("Memory", text="Memory")
         self.process_tree.heading("State", text="State")
         
-        self.process_tree.column("PID", width=40)
+        self.process_tree.column("PID", width=50, anchor=tk.CENTER)
         self.process_tree.column("Name", width=100)
-        self.process_tree.column("Memory", width=70)
-        self.process_tree.column("State", width=70)
+        self.process_tree.column("Memory", width=80, anchor=tk.CENTER)
+        self.process_tree.column("State", width=70, anchor=tk.CENTER)
         
         self.process_tree.pack(fill=tk.BOTH, expand=True)
         
@@ -240,8 +240,23 @@ class ProcessManagerModule:
                                   font=("Arial", 12, "bold"), bg="white", padx=5, pady=5)
         mem_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
-        self.memory_canvas = tk.Canvas(mem_frame, bg="white", highlightthickness=0)
-        self.memory_canvas.pack(fill=tk.BOTH, expand=True)
+        # Canvas with scrollbar
+        canvas_container = tk.Frame(mem_frame, bg="white")
+        canvas_container.pack(fill=tk.BOTH, expand=True)
+        
+        self.memory_scrollbar = tk.Scrollbar(canvas_container, orient=tk.VERTICAL)
+        self.memory_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        self.memory_canvas = tk.Canvas(canvas_container, bg="white", highlightthickness=0,
+                                       yscrollcommand=self.memory_scrollbar.set)
+        self.memory_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        
+        self.memory_scrollbar.config(command=self.memory_canvas.yview)
+        
+        # Enable mouse wheel scrolling
+        self.memory_canvas.bind("<MouseWheel>", self._on_mousewheel)
+        self.memory_canvas.bind("<Button-4>", self._on_mousewheel)  # Linux scroll up
+        self.memory_canvas.bind("<Button-5>", self._on_mousewheel)  # Linux scroll down
         
         # Activity log
         log_frame = tk.LabelFrame(right_panel, text="System Log",
@@ -551,6 +566,15 @@ class ProcessManagerModule:
         if canvas_height <= 1:
             canvas_height = 500
         
+        # Calculate required height based on minimum segment heights
+        min_segment_height = 45  # Minimum height for readability
+        num_segments = len(self.memory_segments)
+        min_required_height = num_segments * min_segment_height + 150  # Extra for title and legend
+        
+        # Use the larger of canvas height or calculated minimum
+        draw_height = max(canvas_height, min_required_height)
+        available_height = draw_height - 150  # Space for title and legend
+        
         # Title
         self.memory_canvas.create_text(canvas_width // 2, 20,
                                        text="RAM Layout (Linear Address Space)",
@@ -561,15 +585,14 @@ class ProcessManagerModule:
         mem_width = 200
         start_x = (canvas_width - mem_width) // 2
         start_y = 50
-        available_height = canvas_height - start_y - 100
         
-        # Scale
+        # Scale with minimum height for each segment
         scale = available_height / self.total_memory
         
         current_y = start_y
         
         for segment in self.memory_segments:
-            seg_height = segment.size * scale
+            seg_height = max(segment.size * scale, min_segment_height)
             
             # Color
             if segment.is_allocated:
@@ -589,30 +612,38 @@ class ProcessManagerModule:
             label_y = current_y + seg_height / 2
             
             if segment.is_allocated:
-                text = f"{segment.process_name}\nPID={segment.process_pid}\n{segment.size} KB"
+                # Display process info with better visibility
+                font_size = 11
+                text = f"{segment.process_name}\nPID={segment.process_pid}\n{segment.size}KB"
                 text_color = "white"
+                
+                self.memory_canvas.create_text(start_x + mem_width // 2, label_y,
+                                              text=text, font=("Arial", font_size, "bold"),
+                                              fill=text_color)
             else:
+                # Free memory display
+                font_size = 11
                 text = f"FREE\n{segment.size} KB"
-                text_color = "black"
-            
-            self.memory_canvas.create_text(start_x + mem_width // 2, label_y,
-                                          text=text, font=("Arial", 9, "bold"),
-                                          fill=text_color)
+                text_color = "#7f8c8d"
+                
+                self.memory_canvas.create_text(start_x + mem_width // 2, label_y,
+                                              text=text, font=("Arial", font_size, "bold"),
+                                              fill=text_color)
             
             # Address labels
-            self.memory_canvas.create_text(start_x - 10, current_y,
+            self.memory_canvas.create_text(start_x - 15, current_y,
                                           text=f"0x{segment.start_address:04X}",
-                                          anchor=tk.E, font=("Courier", 8))
+                                          anchor=tk.E, font=("Courier", 9))
             
             current_y += seg_height
         
         # End address
-        self.memory_canvas.create_text(start_x - 10, current_y,
+        self.memory_canvas.create_text(start_x - 15, current_y,
                                        text=f"0x{self.total_memory:04X}",
-                                       anchor=tk.E, font=("Courier", 8))
+                                       anchor=tk.E, font=("Courier", 9))
         
-        # Legend
-        legend_y = canvas_height - 60
+        # Legend - place after all segments
+        legend_y = current_y + 30
         x = start_x
         
         self.memory_canvas.create_rectangle(x, legend_y, x + 20, legend_y + 20,
@@ -631,6 +662,10 @@ class ProcessManagerModule:
                                            fill="#ecf0f1", outline="black")
         self.memory_canvas.create_text(x + 30, legend_y + 10, text="Free Memory",
                                        anchor=tk.W, font=("Arial", 9))
+        
+        # Set scroll region to include all content
+        total_height = legend_y + 50
+        self.memory_canvas.configure(scrollregion=(0, 0, canvas_width, total_height))
     
     def update_stats(self):
         """Update statistics."""
@@ -656,3 +691,12 @@ class ProcessManagerModule:
         timestamp = time.strftime("%H:%M:%S")
         self.log_text.insert(tk.END, f"[{timestamp}] {message}\n")
         self.log_text.see(tk.END)
+    
+    def _on_mousewheel(self, event):
+        """Handle mouse wheel scrolling for memory canvas."""
+        if event.num == 5 or event.delta < 0:
+            # Scroll down
+            self.memory_canvas.yview_scroll(1, "units")
+        elif event.num == 4 or event.delta > 0:
+            # Scroll up
+            self.memory_canvas.yview_scroll(-1, "units")
