@@ -10,13 +10,6 @@ class DiskSchedulingModule:
         self.seek_sequence = []
         self.total_seek_time = 0
         
-        # Pan and Zoom variables
-        self.canvas_zoom = 1.0
-        self.canvas_offset_x = 0
-        self.canvas_offset_y = 0
-        self.pan_start_x = 0
-        self.pan_start_y = 0
-        
         self.setup_ui()
     
     def setup_ui(self):
@@ -190,14 +183,6 @@ class DiskSchedulingModule:
         self.canvas = tk.Canvas(canvas_frame, bg="white", highlightthickness=0, height=400, width=700)
         self.canvas.pack(fill=tk.BOTH, expand=True)
         
-        # Add pan and zoom controls
-        self.setup_canvas_controls()
-        
-        # Control hints
-        hint_label = tk.Label(canvas_frame, text="💡 Drag to pan • Scroll to zoom • Double-click to reset",
-                             font=("Arial", 8, "italic"), bg="white", fg="#7f8c8d")
-        hint_label.pack(pady=2)
-        
         # Results frame
         results_frame = tk.LabelFrame(right_panel, text="Results & Statistics",
                                       font=("Arial", 12, "bold"), bg="white", padx=5, pady=5)
@@ -207,67 +192,7 @@ class DiskSchedulingModule:
                                    bg="#f8f9fa", relief=tk.FLAT)
         self.results_text.pack(fill=tk.X, padx=5, pady=5)
     
-    def setup_canvas_controls(self):
-        # Mouse wheel zoom
-        self.canvas.bind("<MouseWheel>", self.on_canvas_zoom)
-        
-        # Pan with mouse drag
-        self.canvas.bind("<ButtonPress-1>", self.on_pan_start)
-        self.canvas.bind("<B1-Motion>", self.on_pan_move)
-        
-        # Double-click to reset view
-        self.canvas.bind("<Double-Button-1>", self.reset_canvas_view)
     
-    def on_canvas_zoom(self, event):
-        if not self.seek_sequence:
-            return
-        
-        # Get mouse position
-        x = self.canvas.canvasx(event.x)
-        y = self.canvas.canvasy(event.y)
-        
-        # Zoom factor
-        factor = 1.1 if event.delta > 0 else 0.9
-        
-        # Limit zoom range
-        new_zoom = self.canvas_zoom * factor
-        if new_zoom < 0.5 or new_zoom > 3.0:
-            return
-        
-        self.canvas_zoom = new_zoom
-        
-        # Redraw with new zoom
-        self.draw_visualization()
-    
-    def on_pan_start(self, event):
-        self.pan_start_x = event.x
-        self.pan_start_y = event.y
-        self.canvas.config(cursor="fleur")
-    
-    def on_pan_move(self, event):
-        if not self.seek_sequence:
-            return
-        
-        # Calculate offset
-        dx = event.x - self.pan_start_x
-        dy = event.y - self.pan_start_y
-        
-        self.canvas_offset_x += dx
-        self.canvas_offset_y += dy
-        
-        self.pan_start_x = event.x
-        self.pan_start_y = event.y
-        
-        # Redraw with new offset
-        self.draw_visualization()
-    
-    def reset_canvas_view(self, event=None):
-        self.canvas_zoom = 1.0
-        self.canvas_offset_x = 0
-        self.canvas_offset_y = 0
-        self.canvas.config(cursor="")
-        if self.seek_sequence:
-            self.draw_visualization()
     
     def add_request(self):
         try:
@@ -544,25 +469,29 @@ class DiskSchedulingModule:
         if canvas_height < 100:
             canvas_height = 400
         
-        # Calculate dimensions with zoom
+        # Calculate dimensions
         disk_size = int(self.disk_size_var.get())
-        scale = ((canvas_width - 60) / disk_size) * self.canvas_zoom
-        y_spacing = ((canvas_height - 50) / len(self.seek_sequence) if len(self.seek_sequence) > 1 else 30) * self.canvas_zoom
-        x_start = 40 + self.canvas_offset_x
-        y_top = 30 + self.canvas_offset_y
+        scale = (canvas_width - 60) / disk_size
+        y_spacing = (canvas_height - 50) / len(self.seek_sequence) if len(self.seek_sequence) > 1 else 30
+        x_start = 40
+        y_top = 30
         
         # Draw horizontal axis (track numbers)
-        self.canvas.create_line(x_start, y_top, x_start + ((canvas_width - 60) * self.canvas_zoom), y_top,
-                               fill="#7f8c8d", width=int(2 * self.canvas_zoom))
+        self.canvas.create_line(x_start, y_top, x_start + (canvas_width - 60), y_top,
+                               fill="#7f8c8d", width=2)
         
         # Draw tick marks and labels on axis
-        tick_interval = disk_size // 10 if disk_size > 0 else 20
-        for i in range(0, disk_size + 1, tick_interval):
+        tick_interval = max(1, disk_size // 10) if disk_size > 0 else 20
+        tick_positions = list(range(0, disk_size - 1, tick_interval))
+        # Always add the last track number (disk_size - 1)
+        tick_positions.append(disk_size - 1)
+        
+        for i in tick_positions:
             x = x_start + i * scale
-            self.canvas.create_line(x, y_top - (5 * self.canvas_zoom), x, y_top + (5 * self.canvas_zoom), 
-                                   fill="#95a5a6", width=int(1 * self.canvas_zoom))
-            self.canvas.create_text(x, y_top - (12 * self.canvas_zoom), text=str(i),
-                                   font=("Arial", max(6, int(8 * self.canvas_zoom))), fill="#7f8c8d")
+            self.canvas.create_line(x, y_top - 5, x, y_top + 5, 
+                                   fill="#95a5a6", width=1)
+            self.canvas.create_text(x, y_top - 12, text=str(i),
+                                   font=("Arial", 8), fill="#7f8c8d")
         
         # Color palette for lines
         colors = ['#00d4aa', '#3fb950', '#d29922', '#f85149', '#a371f7',
@@ -570,16 +499,16 @@ class DiskSchedulingModule:
         
         # Start position
         prev_x = x_start + self.seek_sequence[0] * scale
-        prev_y = y_top + (15 * self.canvas_zoom)
+        prev_y = y_top + 15
         
         # Draw start marker
-        marker_size = 6 * self.canvas_zoom
+        marker_size = 6
         self.canvas.create_oval(prev_x - marker_size, prev_y - marker_size, 
                                prev_x + marker_size, prev_y + marker_size,
                                fill="#2ecc71", outline="")
-        self.canvas.create_text(prev_x, prev_y + (15 * self.canvas_zoom), 
+        self.canvas.create_text(prev_x, prev_y + 15, 
                                text=f"Start: {self.seek_sequence[0]}",
-                               font=("Arial", max(6, int(8 * self.canvas_zoom))), fill="#2c3e50")
+                               font=("Arial", 8), fill="#2c3e50")
         
         # Draw movement path
         for i in range(1, len(self.seek_sequence)):
@@ -588,16 +517,14 @@ class DiskSchedulingModule:
             color = colors[(i - 1) % len(colors)]
             
             # Draw line with arrow
-            line_width = max(1, int(2 * self.canvas_zoom))
-            arrow_size = int(10 * self.canvas_zoom)
             self.canvas.create_line(prev_x, prev_y, curr_x, curr_y,
-                                   fill=color, width=line_width, arrow=tk.LAST, 
-                                   arrowshape=(arrow_size, arrow_size + 2, arrow_size // 2))
+                                   fill=color, width=2, arrow=tk.LAST, 
+                                   arrowshape=(10, 12, 5))
             
             # Check if this is a requested track or intermediate
             is_request = self.seek_sequence[i] in self.requests
             point_color = "#e74c3c" if is_request else "#95a5a6"
-            point_size = (4 if is_request else 3) * self.canvas_zoom
+            point_size = 4 if is_request else 3
             
             # Draw point
             self.canvas.create_oval(curr_x - point_size, curr_y - point_size,
@@ -605,18 +532,12 @@ class DiskSchedulingModule:
                                    fill=point_color, outline="")
             
             # Draw label
-            self.canvas.create_text(curr_x + (20 * self.canvas_zoom), curr_y, 
+            self.canvas.create_text(curr_x + 20, curr_y, 
                                    text=str(self.seek_sequence[i]),
-                                   font=("Arial", max(6, int(8 * self.canvas_zoom))), fill="#2c3e50")
+                                   font=("Arial", 8), fill="#2c3e50")
             
             prev_x = curr_x
             prev_y = curr_y
-        
-        # Draw zoom indicator
-        zoom_text = f"Zoom: {self.canvas_zoom:.1f}x"
-        self.canvas.create_text(canvas_width - 50, 20,
-                               text=zoom_text,
-                               font=("Arial", 9), fill="#95a5a6")
     
     def display_results(self):
         self.results_text.delete(1.0, tk.END)
