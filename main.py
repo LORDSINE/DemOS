@@ -1,3 +1,4 @@
+#his is the main entry point for the Operating System Algorithm Simulator application. It sets up the main window and provides navigation to different modules for CPU scheduling, memory management, disk scheduling, and process management. Each module is implemented in a separate file and can be accessed through the home screen. The application is designed to be user-friendly and visually appealing, making it an effective educational tool for understanding operating system concepts.
 import tkinter as tk
 from tkinter import ttk
 import cpu_scheduling
