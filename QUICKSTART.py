@@ -15,7 +15,7 @@ def show_quick_start():
     # Quick start content
     content = """
 ╔════════════════════════════════════════════════════════════════════════╗
-║             OS ALGORITHM SIMULATOR - QUICK START GUIDE                  ║
+║             OS ALGORITHM SIMULATOR MINIPROJECT - QUICK START GUIDE                  ║
 ╚════════════════════════════════════════════════════════════════════════╝
 
 🚀 GETTING STARTED
