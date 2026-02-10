@@ -34,7 +34,7 @@ class FileManagementModule:
         self.animation_speed = 300
         
         self.colors = [
-            "#3498db", "#e74c3c", "#2ecc71", "#f39c12", "#9b59b6",
+            "#3498db", "#e74c3c", "#2ecc71", "#f39c12", "#3f4b97",
             "#1abc9c", "#e67e22", "#95a5a6", "#34495e", "#16a085"
         ]
         self.used_colors = []
@@ -42,7 +42,7 @@ class FileManagementModule:
         self.setup_ui()
     
     def setup_ui(self):
-        header_frame = tk.Frame(self.parent, bg="#8e44ad", height=60)
+        header_frame = tk.Frame(self.parent, bg="#495b92", height=60)
         header_frame.pack(fill=tk.X)
         header_frame.pack_propagate(False)
         
@@ -50,7 +50,7 @@ class FileManagementModule:
             header_frame,
             text="← Back to Home",
             font=("Arial", 11),
-            bg="#9b59b6",
+            bg="#495b92",
             fg="white",
             command=self.back_callback,
             cursor="hand2",
@@ -62,7 +62,7 @@ class FileManagementModule:
             header_frame,
             text="File Allocation Methods",
             font=("Arial", 18, "bold"),
-            bg="#8e44ad",
+            bg="#495b92",
             fg="white"
         )
         title.pack(side=tk.LEFT, padx=20)
