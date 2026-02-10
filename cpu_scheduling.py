@@ -155,6 +155,9 @@ class CPUSchedulingModule:
         self.process_tree.column("Priority", width=60)
         
         self.process_tree.pack(fill=tk.BOTH, expand=True)
+
+        tk.Button(list_frame, text="Remove Selected", command=self.remove_selected_process,
+             bg="#e67e22", fg="white", font=("Arial", 9, "bold")).pack(fill=tk.X, pady=(5, 0))
         
         # Control buttons
         btn_frame = tk.Frame(left_panel, bg="white")
@@ -250,6 +253,20 @@ class CPUSchedulingModule:
         self.processes.clear()
         for item in self.process_tree.get_children():
             self.process_tree.delete(item)
+        self.reset_simulation()
+
+    def remove_selected_process(self):
+        selection = self.process_tree.selection()
+        if not selection:
+            messagebox.showwarning("Warning", "Please select a process to remove")
+            return
+
+        item = selection[0]
+        values = self.process_tree.item(item, "values")
+        if values:
+            pid = values[0]
+            self.processes = [proc for proc in self.processes if proc.pid != pid]
+        self.process_tree.delete(item)
         self.reset_simulation()
     
     def reset_simulation(self):
