@@ -446,7 +446,7 @@ class ProcessManagerModule:
             ("Type:", process.process_type),
             ("State:", process.state),
             ("Memory Size:", f"{process.memory_size} KB"),
-            ("Memory Address:", f"0x{process.allocated_memory:04X}" if process.allocated_memory else "Not allocated"),
+            ("Memory Address:", f"0x{process.allocated_memory:04X}" if process.allocated_memory else "0x0000"),
             ("Priority:", str(process.priority)),
             ("Created:", process.creation_time),
             ("CPU Time:", f"{process.cpu_time} ms")
