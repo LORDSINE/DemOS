@@ -106,7 +106,7 @@ class FileManagementModule:
         
         size_frame = tk.Frame(file_frame, bg="white")
         size_frame.pack(fill=tk.X, pady=2)
-        tk.Label(size_frame, text="Size (blocks):", width=12, anchor='w',
+        tk.Label(size_frame, text="Size (KB):", width=12, anchor='w',
                 bg="white", font=("Arial", 9)).pack(side=tk.LEFT)
         self.filesize_var = tk.StringVar(value="4")
         tk.Entry(size_frame, textvariable=self.filesize_var, width=12,
@@ -494,7 +494,10 @@ class FileManagementModule:
             
             detail_window = tk.Toplevel(self.parent)
             detail_window.title(f"Index Block {block_num}")
-            detail_window.geometry("300x250")
+            
+            window_width = 320
+            window_height = 170 + (len(block.indexed_blocks) * 30)
+            detail_window.geometry(f"{window_width}x{window_height}")
             detail_window.configure(bg="white")
             
             tk.Label(detail_window, text=f"Index Block {block_num}",
