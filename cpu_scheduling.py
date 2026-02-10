@@ -559,16 +559,26 @@ class CPUSchedulingModule:
         self.results_text.insert(tk.END, f"{'='*70}\n\n")
         
         # Process details table
-        header = f"{'PID':<8} {'Arrival':<10} {'Burst':<10} {'Complete':<10} {'TAT':<8} {'WT':<8}\n"
+        show_priority = self.algorithm_var.get() == "Priority"
+        if show_priority:
+            header = f"{'PID':<8} {'Arrival':<10} {'Burst':<10} {'Priority':<10} {'Complete':<10} {'TAT':<8} {'WT':<8}\n"
+            divider = '-' * 80
+        else:
+            header = f"{'PID':<8} {'Arrival':<10} {'Burst':<10} {'Complete':<10} {'TAT':<8} {'WT':<8}\n"
+            divider = '-' * 70
         self.results_text.insert(tk.END, header)
-        self.results_text.insert(tk.END, f"{'-'*70}\n")
+        self.results_text.insert(tk.END, f"{divider}\n")
         
         total_tat = 0
         total_wt = 0
         
         for process in sorted(self.processes, key=lambda p: p.arrival_time):
-            row = f"{process.pid:<8} {process.arrival_time:<10} {process.burst_time:<10} " \
-                  f"{process.completion_time:<10} {process.turnaround_time:<8} {process.waiting_time:<8}\n"
+            if show_priority:
+                row = f"{process.pid:<8} {process.arrival_time:<10} {process.burst_time:<10} " \
+                      f"{process.priority:<10} {process.completion_time:<10} {process.turnaround_time:<8} {process.waiting_time:<8}\n"
+            else:
+                row = f"{process.pid:<8} {process.arrival_time:<10} {process.burst_time:<10} " \
+                      f"{process.completion_time:<10} {process.turnaround_time:<8} {process.waiting_time:<8}\n"
             self.results_text.insert(tk.END, row)
             total_tat += process.turnaround_time
             total_wt += process.waiting_time
@@ -578,7 +588,7 @@ class CPUSchedulingModule:
         avg_tat = total_tat / n
         avg_wt = total_wt / n
         
-        self.results_text.insert(tk.END, f"\n{'-'*70}\n")
+        self.results_text.insert(tk.END, f"\n{divider}\n")
         self.results_text.insert(tk.END, f"Average Turnaround Time: {avg_tat:.2f}\n")
         self.results_text.insert(tk.END, f"Average Waiting Time: {avg_wt:.2f}\n")
         self.results_text.insert(tk.END, f"{'='*70}\n")
