@@ -377,7 +377,7 @@ class ProcessManagerModule:
         self.log("Killing all user processes...")
         
         for process in user_processes[:]:  # Copy list to avoid modification during iteration
-            # Free memory
+            # Code to reallocate memory for each process
             for segment in self.memory_segments:
                 if segment.process_pid == process.pid:
                     segment.is_allocated = False
