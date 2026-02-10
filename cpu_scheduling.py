@@ -588,6 +588,10 @@ class CPUSchedulingModule:
         avg_tat = total_tat / n
         avg_wt = total_wt / n
         
+        if self.algorithm_var.get() == "RR":
+            self.results_text.insert(tk.END, f"\n{divider}\n")
+            ready_queue = " -> ".join(item['pid'] for item in self.gantt_data)
+            self.results_text.insert(tk.END, f"Ready Queue: {ready_queue}\n")
         self.results_text.insert(tk.END, f"\n{divider}\n")
         self.results_text.insert(tk.END, f"Average Turnaround Time: {avg_tat:.2f}\n")
         self.results_text.insert(tk.END, f"Average Waiting Time: {avg_wt:.2f}\n")
