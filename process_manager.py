@@ -1,14 +1,3 @@
-"""
-Process Manager Module - Live Process and Memory Management
-
-This module simulates a real operating system's process manager where:
-- Create and execute processes
-- Allocate memory to processes dynamically
-- View running processes with their memory allocation
-- Terminate processes and see memory deallocation
-- Real-time visualization of memory usage
-"""
-
 import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext
 import time
@@ -16,18 +5,8 @@ import random
 
 
 class Process:
-    """Represents a running process in the system."""
     
     def __init__(self, pid, name, memory_size, process_type="User"):
-        """
-        Initialize a process.
-        
-        Args:
-            pid: Process ID
-            name: Process name
-            memory_size: Memory required in KB
-            process_type: System or User process
-        """
         self.pid = pid
         self.name = name
         self.memory_size = memory_size
@@ -40,16 +19,8 @@ class Process:
 
 
 class MemorySegment:
-    """Represents a memory segment/partition."""
     
     def __init__(self, start_address, size):
-        """
-        Initialize a memory segment.
-        
-        Args:
-            start_address: Starting memory address
-            size: Size of segment in KB
-        """
         self.start_address = start_address
         self.size = size
         self.is_allocated = False
@@ -58,16 +29,8 @@ class MemorySegment:
 
 
 class ProcessManagerModule:
-    """Main module for process and memory management."""
     
     def __init__(self, parent, back_callback):
-        """
-        Initialize the Process Manager module.
-        
-        Args:
-            parent: Parent Tkinter widget
-            back_callback: Function to call when returning to home
-        """
         self.parent = parent
         self.back_callback = back_callback
         self.processes = []
@@ -84,12 +47,10 @@ class ProcessManagerModule:
         self.create_system_process("init", 16)
     
     def initialize_memory(self):
-        """Initialize memory partitions using variable partitioning."""
         # Start with one large free block
         self.memory_segments.append(MemorySegment(0, self.total_memory))
     
     def setup_ui(self):
-        """Create the user interface."""
         # Header
         header_frame = tk.Frame(self.parent, bg="#16a085", height=60)
         header_frame.pack(fill=tk.X)
@@ -273,16 +234,13 @@ class ProcessManagerModule:
         self.update_displays()
     
     def create_system_process(self, name, memory):
-        """Create a system process."""
         self.allocate_memory_to_process(name, memory, "System")
     
     def quick_create(self, size):
-        """Quick create process with preset size."""
         self.proc_mem_var.set(str(size))
         self.create_process()
     
     def create_process(self):
-        """Create a new user process."""
         try:
             name = self.proc_name_var.get().strip()
             memory = int(self.proc_mem_var.get())
@@ -309,7 +267,6 @@ class ProcessManagerModule:
             messagebox.showerror("Error", "Please enter valid numeric values")
     
     def allocate_memory_to_process(self, name, memory_size, proc_type):
-        """Allocate memory to a process using First Fit."""
         # Find suitable memory segment
         for i, segment in enumerate(self.memory_segments):
             if not segment.is_allocated and segment.size >= memory_size:
@@ -364,7 +321,6 @@ class ProcessManagerModule:
         return False
     
     def terminate_process(self):
-        """Terminate selected process."""
         selection = self.process_tree.selection()
         if not selection:
             messagebox.showwarning("Warning", "Please select a process to terminate")
@@ -408,7 +364,6 @@ class ProcessManagerModule:
         self.update_displays()
     
     def kill_all_user(self):
-        """Kill all user processes."""
         user_processes = [p for p in self.processes if p.process_type == "User"]
         
         if not user_processes:
@@ -439,7 +394,6 @@ class ProcessManagerModule:
         self.update_displays()
     
     def merge_free_segments(self):
-        """Merge adjacent free memory segments."""
         merged = True
         while merged:
             merged = False
@@ -455,7 +409,6 @@ class ProcessManagerModule:
                     break
     
     def view_process_details(self):
-        """View detailed process information."""
         selection = self.process_tree.selection()
         if not selection:
             messagebox.showwarning("Warning", "Please select a process")
@@ -510,14 +463,12 @@ class ProcessManagerModule:
                  bg="#95a5a6", fg="white", font=("Arial", 10, "bold")).pack(pady=10)
     
     def update_displays(self):
-        """Update all displays."""
         self.update_process_list()
         self.update_memory_bar()
         self.draw_memory_map()
         self.update_stats()
     
     def update_process_list(self):
-        """Update process list treeview."""
         for item in self.process_tree.get_children():
             self.process_tree.delete(item)
         
@@ -527,7 +478,6 @@ class ProcessManagerModule:
                                            f"{process.memory_size} KB", process.state))
     
     def update_memory_bar(self):
-        """Update memory usage bar."""
         self.memory_bar_canvas.delete("all")
         
         width = self.memory_bar_canvas.winfo_width()
@@ -555,7 +505,6 @@ class ProcessManagerModule:
                                            font=("Arial", 10, "bold"), fill="white")
     
     def draw_memory_map(self):
-        """Draw physical memory map."""
         self.memory_canvas.delete("all")
         
         canvas_width = self.memory_canvas.winfo_width()
@@ -668,7 +617,6 @@ class ProcessManagerModule:
         self.memory_canvas.configure(scrollregion=(0, 0, canvas_width, total_height))
     
     def update_stats(self):
-        """Update statistics."""
         used_memory = sum(s.size for s in self.memory_segments if s.is_allocated)
         free_memory = self.total_memory - used_memory
         utilization = (used_memory / self.total_memory) * 100
@@ -687,13 +635,11 @@ class ProcessManagerModule:
         self.stats_label.config(text=stats)
     
     def log(self, message):
-        """Add message to log."""
         timestamp = time.strftime("%H:%M:%S")
         self.log_text.insert(tk.END, f"[{timestamp}] {message}\n")
         self.log_text.see(tk.END)
     
     def _on_mousewheel(self, event):
-        """Handle mouse wheel scrolling for memory canvas."""
         if event.num == 5 or event.delta < 0:
             # Scroll down
             self.memory_canvas.yview_scroll(1, "units")

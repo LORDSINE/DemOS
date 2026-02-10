@@ -1,15 +1,8 @@
-"""
-Quick Start Guide for OS Simulator
-
-Run this file to get quick instructions for using the simulator.
-"""
-
 import tkinter as tk
 from tkinter import scrolledtext
 
 
 def show_quick_start():
-    """Display quick start instructions."""
     root = tk.Tk()
     root.title("OS Simulator - Quick Start Guide")
     root.geometry("700x600")

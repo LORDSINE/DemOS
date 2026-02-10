@@ -355,7 +355,6 @@ class MemoryManagementModule:
             messagebox.showerror("Error", str(e))
     
     def clear_all(self):
-        """Clear all memory blocks and allocations."""
         self.memory_blocks.clear()
         self.allocation_history.clear()
         self.update_blocks_display()
@@ -363,7 +362,6 @@ class MemoryManagementModule:
         self.results_text.delete(1.0, tk.END)
     
     def reset_memory(self):
-        """Reset all allocations but keep memory blocks."""
         for block in self.memory_blocks:
             block.is_allocated = False
             block.process_id = None
@@ -374,7 +372,6 @@ class MemoryManagementModule:
         self.update_statistics()
     
     def draw_memory_visualization(self):
-        """Draw the memory blocks visualization on the canvas."""
         self.canvas.delete("all")
         
         if not self.memory_blocks:
@@ -482,7 +479,6 @@ class MemoryManagementModule:
                                font=("Arial", 9))
     
     def update_statistics(self):
-        """Update the statistics and allocation details."""
         self.results_text.delete(1.0, tk.END)
         
         if not self.memory_blocks:
