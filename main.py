@@ -5,6 +5,7 @@ import cpu_scheduling
 import memory_management
 import disk_scheduling
 import process_manager
+import file_management
 
 
 class OSSimulatorApp:
@@ -82,7 +83,8 @@ class OSSimulatorApp:
             ("Process Manager", "Create processes with live memory allocation", self.show_process_manager),
             ("CPU Scheduling", "Visualize process scheduling algorithms", self.show_cpu_scheduling),
             ("Memory Management", "Demonstrate memory allocation strategies", self.show_memory_management),
-            ("Disk Scheduling", "Simulate disk head movement algorithms", self.show_disk_scheduling)
+            ("Disk Scheduling", "Simulate disk head movement algorithms", self.show_disk_scheduling),
+            ("File Allocation", "Visualize file allocation methods on disk", self.show_file_management)
         ]
         
         for i, (title, description, command) in enumerate(modules):
@@ -166,6 +168,10 @@ class OSSimulatorApp:
     def show_process_manager(self):
         self.clear_frame()
         process_manager.ProcessManagerModule(self.main_frame, self.show_home)
+    
+    def show_file_management(self):
+        self.clear_frame()
+        file_management.FileManagementModule(self.main_frame, self.show_home)
 
 
 def main():
